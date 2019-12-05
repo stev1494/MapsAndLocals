@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
        
         primaryColor: Color.fromRGBO(32, 32, 32, 1)
       ),
-      home: MyHomePage(title: 'Sprint'),
+      home: MyHomePage(title: 'Control Vehicular III SPRINT'),
     );
   }
 }
@@ -38,41 +38,58 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
    
     return Scaffold(
-      appBar: AppBar(
-
+      // backgroundColor: Color.fromRGBO(58, 66, 86, 1.0),
+      appBar: AppBar(  
         title: Text(widget.title),
       ),
-      body: Center(
-        
-        child: Column(
-          
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+      body: FadeInImage.assetNetwork(
+        image: 'https://ep01.epimg.net/internacional/imagenes/2016/09/15/actualidad/1473950908_051813_1473950996_sumario_normal.gif',
+        placeholder: 'images/no-auto.png',
+      ),
+      
+      floatingActionButton: makeBottom(context),
 
-            FlatButton(
-              onPressed: (){
+    );
+  }
+
+
+
+
+  Widget makeBottom ( BuildContext context){
+
+    return Container(
+      height: 55.0,
+      child: BottomAppBar(
+        color: Color.fromRGBO(58, 66, 86, 1.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.local_gas_station, color: Colors.white),
+              onPressed: () {
                 Navigator.pushNamed(context, '/gasolineras');
               },
-              child: Container(
-                child: new Text('Ir a Mapas'),
-                
-              ),
             ),
+            IconButton(
+              icon: Icon(Icons.store, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamed(context, '/locales');
 
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.card_travel, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamed(context, '/viajes');
+
+              },
+            ),
             
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Theme.of(context).primaryColor,
-        
-        onPressed: (){
-          Navigator.pushNamed(context, '/locales');
-        },
-        
-       icon: Icon(Icons.navigate_next),
-       label: Text('Locales'),
-      ), 
     );
-  }
+
+
+  } 
 }
