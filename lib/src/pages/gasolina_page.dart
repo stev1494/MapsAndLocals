@@ -1,7 +1,13 @@
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:mapas/src/models/gasolineraModel.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:geolocator/geolocator.dart';
+
 //import 'package:location/location.dart';
 // import 'package:geolocator/geolocator.dart';
 
@@ -13,137 +19,66 @@ class GasolinaPage extends StatefulWidget {
 
 class _GasolinaPageState extends State<GasolinaPage> {
 
+   final CameraPosition _position = CameraPosition(
+      target: LatLng(37.43296265331129, -122.08832357078792),
+      tilt: 59.440717697143555,
+      zoom: 19.151926040649414
+    );
 
-  final map = new MapController();
-  
-  List<String> mapas = ['streets', 'dark', 'light', 'outdoors', 'satellite'];
-  int indexMap = 0;
-  String typeMap = 'streets';
-  
-  final gasolinera = Gasolinera(
-    nombre: "Primax",
-    latitud: "-2.167747", 
-    longitud: "-79.848035" , 
-  );
+    StreamSubscription<Position> _positionStream;
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _startTracking();
+  }
+
+  _startTracking(){
+    final geolocator = Geolocator();
+    final locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 5);
+
+    _positionStream = geolocator.getPositionStream(locationOptions).listen(_onLocationUpdate);
+  }
+
+  _onLocationUpdate( Position position){
+      if(position!=null){
+          print("position ${position.latitude},${position.longitude}");
+        }
+  }
+
+  @override
+  void dispose() {
+    if(_positionStream!=null){
+      _positionStream.cancel();
+      _positionStream=null;
+    }
+    super.dispose();
+  }
  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: <Widget>[
-          _buttonRedict()
-        ],
-      ),
-      body: _createMap(gasolinera),
-      floatingActionButton: _createFloatingButton( context ),
-
-    );
-  }
-
-
-Widget _createFloatingButton( BuildContext context){
-
-  return FloatingActionButton.extended(
-    label: Text('Mapas'),
-    icon: Icon(Icons.track_changes),
-    backgroundColor: Theme.of(context).primaryColor,
-    onPressed: (){
-
-        indexMap++;
-        print(indexMap);
-        if(indexMap > mapas.length-1){
-            indexMap = 0;
-        }
-        setState((){
-            typeMap = mapas[indexMap];    
-        });
-
-    },
-  );
-
-}
-
-
-  Widget _buttonRedict(){
-    return IconButton(
-        onPressed: ()  { 
-
-         
-          //_actualPos();
-          map.move(gasolinera.getLatLng(), 15);
-        },
-        icon: Icon(Icons.my_location),
-    );
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: <Widget>[
+               GoogleMap(
+                 initialCameraPosition: _position,
+                 myLocationButtonEnabled: true,
+                 myLocationEnabled: true,
+                 onTap: ( LatLng p){
+                    print("p: ${p.latitude},${p.longitude}");
+                 },
+               ),
+            ],
+          ),
+        ),
+    );  
   }
 
 
 
-// _actualPos() async {
-//   Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-//   print(position);
-// }
-
-
-  Widget _createMap( Gasolinera gasolinera){
-
-    return FlutterMap(
-      mapController: map,
-      options: MapOptions(
-        center: gasolinera.getLatLng(),
-        zoom: 13.0,
-      ),
-
-      layers: [
-        _mapa(),
-        _createMarkets( gasolinera),
-        
-      ],
-    );
-
-  }
-
-  _mapa(){
-    return TileLayerOptions(
-      urlTemplate: 'https://api.mapbox.com/v4/'
-      '{id}/{z}/{x}/{y}@2x.png?access_token={accessToken}',
-      additionalOptions: {
-        'accessToken':'pk.eyJ1Ijoic3RldmVuMTQ5NCIsImEiOiJjazJhenBjNDgxajcxM2hvamNqd293MDcyIn0.j4qB-a-2L68lTqO5Jns3fA',
-        'id':'mapbox.streets'
-        // Los tipos de mapas son :
-        // mapbox.dark  , light , outdoors , satellite
-      }
-    );
-  }
-
-
-  _createMarkets( Gasolinera gasolinera){
-
-    return MarkerLayerOptions(
-      markers: <Marker> [
-        Marker(
-          width: 100.0,
-          height: 100.0,
-          point: gasolinera.getLatLng(),
-          builder: ( BuildContext context) => Container(
-            
-            child: Column(children: <Widget>[
-              Icon(
-                Icons.location_on,
-                size: 70.0,
-                color: Theme.of(context).primaryColor,   
-              ),
-              Text(
-                gasolinera.nombre,
-                style: TextStyle(
-                  fontSize: 10,
-                ),
-              )
-            ],)
-            )    
-        )
-      ]
-    );
-  }
 }
