@@ -2,14 +2,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+// import 'package:flutter_map/flutter_map.dart';
 import 'package:mapas/src/models/gasolineraModel.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
+// import 'package:flutter_map/src/layer/marker_layer.dart';
 
-//import 'package:location/location.dart';
-// import 'package:geolocator/geolocator.dart';
 
 class GasolinaPage extends StatefulWidget {
   GasolinaPage({Key key}) : super(key: key);
@@ -19,66 +18,122 @@ class GasolinaPage extends StatefulWidget {
 
 class _GasolinaPageState extends State<GasolinaPage> {
 
-   final CameraPosition _position = CameraPosition(
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414
-    );
+ Completer<GoogleMapController> controller1;
 
-    StreamSubscription<Position> _positionStream;
+  //static LatLng _center = LatLng(-15.4630239974464, 28.363397732282127);
+  static LatLng _initialPosition;
+   final  Set<Marker> _markers = Set();
+  // Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
+
+  static  LatLng _lastMapPosition = _initialPosition;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _startTracking();
+    _getUserLocation();
+  }
+  void _getUserLocation() async {
+    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> placemark = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+    setState(() {
+      _initialPosition = LatLng(position.latitude, position.longitude);
+      print('${placemark[0].name}');
+    });
   }
 
-  _startTracking(){
-    final geolocator = Geolocator();
-    final locationOptions = LocationOptions(accuracy: LocationAccuracy.high, distanceFilter: 5);
 
-    _positionStream = geolocator.getPositionStream(locationOptions).listen(_onLocationUpdate);
+  _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      //  controller1.Carcomplete(controller);
+    });
   }
 
-  _onLocationUpdate( Position position){
-      if(position!=null){
-          print("position ${position.latitude},${position.longitude}");
-        }
+  MapType _currentMapType = MapType.normal;
+
+  void _onMapTypeButtonPressed() {
+    setState(() {
+      _currentMapType = _currentMapType == MapType.normal
+          ? MapType.satellite
+          : MapType.normal;
+    });
   }
 
-  @override
-  void dispose() {
-    if(_positionStream!=null){
-      _positionStream.cancel();
-      _positionStream=null;
-    }
-    super.dispose();
+  _onCameraMove(CameraPosition position) {
+    _lastMapPosition = position.target;
   }
- 
 
+  _onAddMarkerButtonPressed() {
+    setState(() {
+      _markers.add(
+          Marker(
+              markerId: MarkerId(_lastMapPosition.toString()),
+              position: _lastMapPosition,
+              infoWindow: InfoWindow(
+                  title: "Nombre de  gasolinera",
+                  snippet: "Snnipet",
+                  onTap: (){
+                  }
+              ),
+              onTap: (){
+              },
+
+              icon: BitmapDescriptor.defaultMarker));
+      
+    });
+  }
+  Widget mapButton(Function function, Icon icon, Color color) {
+    return RawMaterialButton(
+      onPressed: function,
+      child: icon,
+      shape: new CircleBorder(),
+      elevation: 2.0,
+      fillColor: color,
+      padding: const EdgeInsets.all(7.0),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          child: Stack(
-            children: <Widget>[
-               GoogleMap(
-                 initialCameraPosition: _position,
-                 myLocationButtonEnabled: true,
-                 myLocationEnabled: true,
-                 onTap: ( LatLng p){
-                    print("p: ${p.latitude},${p.longitude}");
-                 },
-               ),
-            ],
+      body: _initialPosition == null ? Container(child: Center(child:Text('Cargando mapa..', style: TextStyle(fontFamily: 'Avenir-Medium', color: Colors.grey[400]),),),) : Container(
+        child: Stack(children: <Widget>[
+          GoogleMap(
+            markers: _markers,
+            mapType: _currentMapType,
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 25.4746,
+            ),
+            onMapCreated: _onMapCreated,
+            zoomGesturesEnabled: true,
+            onCameraMove: _onCameraMove,
+            myLocationEnabled: true,
+            compassEnabled: true,
+            myLocationButtonEnabled: false,
+
           ),
-        ),
-    );  
+          Align(
+            alignment: Alignment.topRight,
+            child: Container(
+                margin: EdgeInsets.fromLTRB(0.0, 50.0, 0.0, 0.0),
+                child: Column(
+                  children: <Widget>[
+                    mapButton(_onAddMarkerButtonPressed,
+                        Icon(
+                            Icons.add_location
+                        ), Colors.blue),
+                    mapButton(
+                        _onMapTypeButtonPressed,
+                        Icon(
+                          IconData(0xf473,
+                              fontFamily: CupertinoIcons.iconFont,
+                              fontPackage: CupertinoIcons.iconFontPackage),
+                        ),
+                        Colors.green),
+                  ],
+                )),
+          )
+        ]),
+      ),
+    );
   }
-
-
-
 }
