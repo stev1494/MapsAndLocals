@@ -20,6 +20,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
   //static LatLng _center = LatLng(-15.4630239974464, 28.363397732282127);
   static LatLng _initialPosition;
   final  Set<Marker> _markers = Set();
+  
   // Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
 
   static  LatLng _lastMapPosition = _initialPosition;
@@ -59,13 +60,32 @@ class _GasolinaPageState extends State<GasolinaPage> {
     _lastMapPosition = position.target;
   }
 
+
+  _updateMarkerPosition( MarkerId markerId , LatLng p){
+    //Aquí debo actualizar el valor al marker
+    //Investigar como agregarlo al map
+    
+    // _markers[markerId] = _markers.add(Marker(markerId: markerId));
+    print("la nueva posicion es $p");
+  }
+
   _onAddMarkerButtonPressed() {
+
+    final id = "${_markers.length}";
+    final markerId = MarkerId(id);
 
     setState(() {
       _markers.add(
           Marker(
-              markerId: MarkerId(_lastMapPosition.toString()),
+              // markerId: MarkerId(_lastMapPosition.toString()),
+              markerId: MarkerId(id),
               position: _lastMapPosition,
+              draggable: true,
+              // onDragEnd: ( _lastMapPosition){
+              //   print("${_lastMapPosition.latitude}, ${_lastMapPosition.longitude} ");
+              // },
+              onDragEnd: ( _lastMapPosition) => _updateMarkerPosition(markerId, _lastMapPosition),
+              
               infoWindow: InfoWindow(
                   title: "Gasolinera ",
                   snippet: "${_lastMapPosition.latitude}, ${_lastMapPosition.longitude} ",
@@ -76,6 +96,9 @@ class _GasolinaPageState extends State<GasolinaPage> {
               },
 
               icon: BitmapDescriptor.defaultMarker));
+              setState(() {
+               _markers[markerId]= _markers;
+              });
       
     });
   }
