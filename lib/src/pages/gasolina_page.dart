@@ -1,13 +1,10 @@
-
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-// import 'package:flutter_map/flutter_map.dart';
-import 'package:mapas/src/models/gasolineraModel.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:flutter_map/src/layer/marker_layer.dart';
+// import 'package:flutter_map/flutter_map.dart';
 
 
 class GasolinaPage extends StatefulWidget {
@@ -22,7 +19,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
 
   //static LatLng _center = LatLng(-15.4630239974464, 28.363397732282127);
   static LatLng _initialPosition;
-   final  Set<Marker> _markers = Set();
+  final  Set<Marker> _markers = Set();
   // Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
 
   static  LatLng _lastMapPosition = _initialPosition;
@@ -44,7 +41,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
 
   _onMapCreated(GoogleMapController controller) {
     setState(() {
-      //  controller1.Carcomplete(controller);
+        // controller1.Carcomplete(controller);
     });
   }
 
@@ -63,14 +60,15 @@ class _GasolinaPageState extends State<GasolinaPage> {
   }
 
   _onAddMarkerButtonPressed() {
+
     setState(() {
       _markers.add(
           Marker(
               markerId: MarkerId(_lastMapPosition.toString()),
               position: _lastMapPosition,
               infoWindow: InfoWindow(
-                  title: "Nombre de  gasolinera",
-                  snippet: "Snnipet",
+                  title: "Gasolinera ",
+                  snippet: "${_lastMapPosition.latitude}, ${_lastMapPosition.longitude} ",
                   onTap: (){
                   }
               ),
@@ -101,7 +99,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
             mapType: _currentMapType,
             initialCameraPosition: CameraPosition(
               target: _initialPosition,
-              zoom: 25.4746,
+              zoom: 18.4746,
             ),
             onMapCreated: _onMapCreated,
             zoomGesturesEnabled: true,
@@ -120,7 +118,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
                     mapButton(_onAddMarkerButtonPressed,
                         Icon(
                             Icons.add_location
-                        ), Colors.blue),
+                        ), Colors.grey),
                     mapButton(
                         _onMapTypeButtonPressed,
                         Icon(
@@ -128,7 +126,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
                               fontFamily: CupertinoIcons.iconFont,
                               fontPackage: CupertinoIcons.iconFontPackage),
                         ),
-                        Colors.green),
+                        Colors.deepOrange[300]),
                   ],
                 )),
           )
