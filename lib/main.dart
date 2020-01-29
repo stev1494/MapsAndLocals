@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
        
         primaryColor: Color.fromRGBO(32, 32, 32, 1)
       ),
-      home: MyHomePage(title: 'Control Vehicular III SPRINT'),
+      home: MyHomePage(title: 'Stev'),
     );
   }
 }

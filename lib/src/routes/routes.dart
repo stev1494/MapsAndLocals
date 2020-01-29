@@ -16,8 +16,7 @@ Map <String , WidgetBuilder > getRoutes(){
         '/locales'               : ( context ) => LocalesPage(),
         '/localdetail'           : ( context ) => LocalDetailPage(),
         '/viajes'                : ( context ) => ViajesPage(),
-        '/new_travel'            : ( context ) => NewTravelPage()
-        
+        '/new_travel'            : ( context ) => NewTravelPage()        
       
   };
 }

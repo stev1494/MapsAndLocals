@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mapas/src/pages/sliding_up.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 // import 'package:flutter_map/src/layer/marker_layer.dart';
 // import 'package:flutter_map/flutter_map.dart';
 
@@ -14,13 +16,16 @@ class GasolinaPage extends StatefulWidget {
 }
 
 class _GasolinaPageState extends State<GasolinaPage> {
-
- Completer<GoogleMapController> controller1;
-
-  //static LatLng _center = LatLng(-15.4630239974464, 28.363397732282127);
+  PanelController pc = new PanelController();
+  String localName ="Nombre de local";
+  double lat;
+  double long;
+  String idMarker;
+  bool flag = false;
+  double height=0;
+  Completer<GoogleMapController> controller1;
   static LatLng _initialPosition;
   final  Set<Marker> _markers = Set();
-  
   // Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
 
   static  LatLng _lastMapPosition = _initialPosition;
@@ -50,6 +55,7 @@ class _GasolinaPageState extends State<GasolinaPage> {
 
   void _onMapTypeButtonPressed() {
     setState(() {
+      
       _currentMapType = _currentMapType == MapType.normal
           ? MapType.satellite
           : MapType.normal;
@@ -62,14 +68,13 @@ class _GasolinaPageState extends State<GasolinaPage> {
 
 
   _updateMarkerPosition( MarkerId markerId , LatLng p){
-    //Aquí debo actualizar el valor al marker
-    //Investigar como agregarlo al map
-    
-    // _markers[markerId] = _markers.add(Marker(markerId: markerId));
+
+    _markers.add(Marker(markerId: markerId));
     print("la nueva posicion es $p");
   }
 
   _onAddMarkerButtonPressed() {
+
 
     final id = "${_markers.length}";
     final markerId = MarkerId(id);
@@ -81,26 +86,56 @@ class _GasolinaPageState extends State<GasolinaPage> {
               markerId: MarkerId(id),
               position: _lastMapPosition,
               draggable: true,
-              // onDragEnd: ( _lastMapPosition){
-              //   print("${_lastMapPosition.latitude}, ${_lastMapPosition.longitude} ");
-              // },
+
               onDragEnd: ( _lastMapPosition) => _updateMarkerPosition(markerId, _lastMapPosition),
               
               infoWindow: InfoWindow(
-                  title: "Gasolinera ",
+                  title: localName,
                   snippet: "${_lastMapPosition.latitude}, ${_lastMapPosition.longitude} ",
                   onTap: (){
+                    setState(() {
+                      flag =true;
+                      height = 120;
+                      pc.show();
+                      idMarker= id;
+                      lat = _lastMapPosition.latitude;
+                      long = _lastMapPosition.longitude;
+
+                    });
                   }
               ),
-              onTap: (){
-              },
 
               icon: BitmapDescriptor.defaultMarker));
               setState(() {
-               _markers[markerId]= _markers;
+                //Aquí se actualiza el estado del marker
+               //_markers[markerId]= _markers;
               });
       
     });
+  }
+
+  Widget pop(){
+    return Positioned(
+      left: 20,
+      right: 20,
+      top: 20,
+      child: SafeArea(
+          child: Container(
+            child: Row(children: <Widget>[
+              FloatingActionButton(
+                backgroundColor: Colors.black,
+                onPressed: (){
+                   Navigator.pop(context);
+                },
+                child: Icon( 
+                  Icons.arrow_back_ios,
+                  color: Colors.deepOrange,
+                  )
+              )
+            ],),    
+        ),
+      ),
+    );
   }
   Widget mapButton(Function function, Icon icon, Color color) {
     return RawMaterialButton(
@@ -116,9 +151,13 @@ class _GasolinaPageState extends State<GasolinaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _initialPosition == null ? Container(child: Center(child:Text('Cargando mapa..', style: TextStyle(fontFamily: 'Avenir-Medium', color: Colors.grey[400]),),),) : Container(
-        child: Stack(children: <Widget>[
+        child: SlidingUpPanel(
+          controller: pc,
+          minHeight: height,
+          body: Stack(children: <Widget>[
           GoogleMap(
-            markers: _markers,
+            markers:_markers,
+            // markers: Set.of(_markers.values),
             mapType: _currentMapType,
             initialCameraPosition: CameraPosition(
               target: _initialPosition,
@@ -130,8 +169,10 @@ class _GasolinaPageState extends State<GasolinaPage> {
             myLocationEnabled: true,
             compassEnabled: true,
             myLocationButtonEnabled: false,
+            
 
           ),
+          
           Align(
             alignment: Alignment.topRight,
             child: Container(
@@ -152,8 +193,11 @@ class _GasolinaPageState extends State<GasolinaPage> {
                         Colors.deepOrange[300]),
                   ],
                 )),
-          )
+          ),
+          pop(),
         ]),
+        panel: Sliding(name: localName, position:_lastMapPosition , pc:pc),
+        )
       ),
     );
   }
